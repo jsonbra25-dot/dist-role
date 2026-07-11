@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>DIST. ROLE</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="DIST. ROLE">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -41,6 +48,17 @@
   }
 
   /* HEADER */
+  .offline-banner{
+    display:none;
+    background:#5B3D00;
+    color:#FFE9A8;
+    text-align:center;
+    font-size:12px;
+    font-weight:600;
+    padding:7px 10px;
+  }
+  .offline-banner.show{ display:block; }
+
   header{
     background:#000000;
     color:#fff;
@@ -98,11 +116,27 @@
     font-weight:700;
     letter-spacing:.5px;
   }
+  .subtitle-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:2px;
+    gap:10px;
+  }
   .subtitle{
     font-size:12px;
     color:#9BA2AF;
-    margin-top:2px;
     letter-spacing:.2px;
+  }
+  .insta-link{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    font-size:11px;
+    font-weight:600;
+    color:#E8B4C8;
+    text-decoration:none;
+    white-space:nowrap;
   }
   .barcode{
     height:8px;
@@ -299,6 +333,38 @@
   }
   .icon-btn:active{ background:var(--line); }
   .icon-btn.danger{ color:var(--danger); }
+  .icon-btn.wa-btn{ color:#25D366; background:#E7F9EE; }
+
+  .tag-img{
+    width:52px;
+    height:52px;
+    border-radius:10px;
+    object-fit:cover;
+    flex:none;
+    background:var(--bg);
+  }
+  .promo-badge{
+    display:inline-block;
+    background:var(--danger);
+    color:#fff;
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.4px;
+    padding:2px 6px;
+    border-radius:5px;
+    vertical-align:middle;
+    margin-left:4px;
+  }
+  .promo-old{
+    font-size:12px !important;
+    color:var(--ink-faint) !important;
+    text-decoration:line-through;
+    font-weight:400 !important;
+    margin-bottom:-2px;
+  }
+  .promo-new{
+    color:var(--danger) !important;
+  }
 
   /* FAB */
   .fab{
@@ -326,6 +392,24 @@
     .fab{ transform:translateX(0); left:auto; right:22px; }
     .fab:active{ transform:scale(.94); }
   }
+
+  .whatsapp-fab{
+    position:fixed;
+    bottom:26px;
+    left:22px;
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    background:#25D366;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 6px 16px rgba(0,0,0,.3);
+    z-index:25;
+    text-decoration:none;
+  }
+  .whatsapp-fab:active{ transform:scale(.94); }
 
   /* MODAL */
   .overlay{
@@ -502,6 +586,7 @@
 </head>
 <body>
 <div class="app">
+  <div class="offline-banner" id="offlineBanner">Sem internet · mostrando última versão salva</div>
 
   <header>
     <div class="brand">
@@ -517,7 +602,13 @@
         </button>
       </div>
     </div>
-    <div class="subtitle">catálogo de preços · compartilhado com a equipe</div>
+    <div class="subtitle-row">
+      <span class="subtitle">catálogo de preços online</span>
+      <a class="insta-link" href="https://instagram.com/role_distribuidora" target="_blank" rel="noopener">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        @role_distribuidora
+      </a>
+    </div>
     <div class="barcode"></div>
   </header>
 
@@ -538,6 +629,10 @@
   </main>
 
   <button class="fab" id="addFab" aria-label="Adicionar produto" style="display:none;">+</button>
+
+  <a class="whatsapp-fab" id="whatsappFab" href="#" target="_blank" rel="noopener" aria-label="Falar com a Role no WhatsApp">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm0 18.13h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.36c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.55-3.7 8.21-8.24 8.21zm4.52-6.16c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08 0 1.22.89 2.4 1.02 2.57.12.17 1.75 2.67 4.24 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.07-.11-.23-.17-.48-.29z"/></svg>
+  </a>
 
   <!-- PRODUCT SHEET -->
   <div class="overlay" id="overlay">
@@ -572,6 +667,16 @@
           </div>
         </div>
         <div class="error-msg" id="errPrice">Informe ao menos um preço válido.</div>
+
+        <div class="field">
+          <label>Foto do produto (link/URL, opcional)</label>
+          <input id="inputImage" type="text" placeholder="https://...">
+        </div>
+
+        <div class="field">
+          <label>Preço promocional unitário (opcional)</label>
+          <input id="inputPromo" type="number" inputmode="decimal" step="0.01" placeholder="Deixe vazio se não estiver em oferta">
+        </div>
       </div>
 
       <div class="sheet-actions">
@@ -591,6 +696,12 @@
         <button id="addCatBtn">Criar</button>
       </div>
 
+      <div style="border-top:1px solid var(--line); margin-top:20px; padding-top:16px; display:flex; flex-direction:column; gap:8px;">
+        <button class="btn ghost" id="openBulkImportBtn" style="width:100%;">📋 Importar produtos em massa</button>
+        <button class="btn ghost" id="openBulkAdjustBtn" style="width:100%;">💲 Reajustar preços em lote</button>
+        <button class="btn ghost" id="openHistoryBtn" style="width:100%;">🕒 Ver histórico de alterações</button>
+      </div>
+
       <div style="border-top:1px solid var(--line); margin-top:20px; padding-top:16px;">
         <label style="display:block; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-faint); font-weight:600; margin-bottom:10px;">Senha de administrador</label>
         <div class="add-cat-row">
@@ -603,6 +714,59 @@
 
       <div class="sheet-actions" style="margin-top:16px;">
         <button class="btn ghost" id="closeManageBtn">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BULK IMPORT SHEET -->
+  <div class="overlay" id="bulkImportOverlay">
+    <div class="sheet">
+      <h2>Importar produtos em massa</h2>
+      <div class="hint-box">
+        Cole uma lista, um produto por linha, no formato:<br>
+        <strong>Nome;PreçoUnitário;PreçoCaixa;Aba</strong><br>
+        Ex: Skol lata 350ml;5.00;58.00;Cervejas<br>
+        (Aba é opcional. Se a aba não existir, ela será criada automaticamente.)
+      </div>
+      <div class="field">
+        <textarea id="bulkImportText" rows="8" style="width:100%; border:1.5px solid var(--line); border-radius:10px; padding:12px 14px; font-size:13px; font-family:'JetBrains Mono',monospace; outline:none; background:var(--bg); color:var(--ink); resize:vertical;" placeholder="Skol lata 350ml;5.00;58.00;Cervejas
+Heineken long neck;7.50;90.00;Cervejas
+Gin Rocks;35.00;;Gin"></textarea>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn ghost" id="cancelBulkImportBtn">Cancelar</button>
+        <button class="btn primary" id="submitBulkImportBtn">Importar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BULK ADJUST SHEET -->
+  <div class="overlay" id="bulkAdjustOverlay">
+    <div class="sheet">
+      <h2>Reajustar preços em lote</h2>
+      <div class="field">
+        <label>Aplicar em</label>
+        <select id="bulkAdjustTab"></select>
+      </div>
+      <div class="field">
+        <label>Percentual de reajuste (use negativo para reduzir)</label>
+        <input id="bulkAdjustPercent" type="number" step="0.1" placeholder="Ex: 5 para +5% ou -10 para -10%">
+      </div>
+      <div class="hint-box">Isso vai ajustar o preço unitário e o preço por caixa de todos os produtos da aba escolhida.</div>
+      <div class="sheet-actions">
+        <button class="btn ghost" id="cancelBulkAdjustBtn">Cancelar</button>
+        <button class="btn primary" id="submitBulkAdjustBtn">Aplicar reajuste</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY SHEET -->
+  <div class="overlay" id="historyOverlay">
+    <div class="sheet">
+      <h2>Histórico de alterações</h2>
+      <div class="cat-list" id="historyList" style="max-height:50vh; overflow-y:auto;"></div>
+      <div class="sheet-actions" style="margin-top:16px;">
+        <button class="btn ghost" id="closeHistoryBtn">Fechar</button>
       </div>
     </div>
   </div>
@@ -649,6 +813,9 @@ const firebaseConfig = {
   measurementId: "G-T4J96ZY7T6"
 };
 
+const WHATSAPP_NUMBER = "5599992074636";
+const INSTAGRAM_HANDLE = "role_distribuidora";
+
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
 const catalogRef = doc(db, "role-catalog", "main");
@@ -671,6 +838,8 @@ const inputName = document.getElementById('inputName');
 const inputUnit = document.getElementById('inputUnit');
 const inputBox = document.getElementById('inputBox');
 const inputCategory = document.getElementById('inputCategory');
+const inputImage = document.getElementById('inputImage');
+const inputPromo = document.getElementById('inputPromo');
 const errName = document.getElementById('errName');
 const errPrice = document.getElementById('errPrice');
 const toast = document.getElementById('toast');
@@ -821,6 +990,7 @@ async function submitAdminLogin(){
     }
     isAdmin = true;
     localStorage.setItem('role_is_admin', 'true');
+    localStorage.setItem('role_admin_login_ts', String(Date.now()));
     closeAdminLogin();
     updateAdminUI();
     showToast('Senha criada. Modo administrador ativado.');
@@ -834,6 +1004,7 @@ async function submitAdminLogin(){
     if(storedHash && hash === storedHash){
       isAdmin = true;
       localStorage.setItem('role_is_admin', 'true');
+      localStorage.setItem('role_admin_login_ts', String(Date.now()));
       closeAdminLogin();
       updateAdminUI();
       showToast('Modo administrador ativado.');
@@ -850,6 +1021,7 @@ function logoutAdmin(){
   if(!confirm('Sair do modo administrador?')) return;
   isAdmin = false;
   localStorage.removeItem('role_is_admin');
+  localStorage.removeItem('role_admin_login_ts');
   updateAdminUI();
   showToast('Modo administrador desativado.');
 }
@@ -870,6 +1042,32 @@ async function saveNewPassword(){
     showToast('Senha atualizada com sucesso.');
   }catch(e){
     showToast('Erro ao salvar. Verifique a internet.');
+  }
+}
+
+function getAdminName(){
+  let name = localStorage.getItem('role_admin_name');
+  if(!name){
+    name = prompt('Seu nome (vai aparecer no histórico de alterações):', '') || 'Admin';
+    localStorage.setItem('role_admin_name', name);
+  }
+  return name;
+}
+
+async function addHistoryEntry(action, detail){
+  try{
+    const cfgSnap = await getDoc(configRef);
+    const data = cfgSnap.exists() ? cfgSnap.data() : {};
+    const history = data.history || [];
+    history.unshift({
+      ts: Date.now(),
+      admin: getAdminName(),
+      action,
+      detail
+    });
+    await setDoc(configRef, { history: history.slice(0, 50) }, { merge: true });
+  }catch(e){
+    console.error('history log failed', e);
   }
 }
 
@@ -952,15 +1150,20 @@ function render(){
     const unit = formatBRL(p.unitPrice);
     const box = formatBRL(p.boxPrice);
     const cat = categoryName(p.categoryId);
+    const hasPromo = p.promoPrice !== null && p.promoPrice !== undefined && !isNaN(Number(p.promoPrice));
+    const promo = hasPromo ? formatBRL(p.promoPrice) : null;
+    const waMsg = encodeURIComponent(`Olá! Tenho interesse neste produto do catálogo Role:\n*${p.name}*\nUnidade: ${hasPromo ? promo + ' (oferta)' : (unit || '—')}${box ? ' | Caixa: ' + box : ''}`);
+    const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${waMsg}`;
     return `
     <div class="tag" data-id="${p.id}">
+      ${p.imageUrl ? `<img class="tag-img" src="${escapeHtml(p.imageUrl)}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'">` : ''}
       <div class="tag-info">
-        <div class="tag-name">${escapeHtml(p.name)}</div>
+        <div class="tag-name">${escapeHtml(p.name)} ${hasPromo ? '<span class="promo-badge">OFERTA</span>' : ''}</div>
         ${activeTab==='all' && cat ? `<div class="tag-cat">${escapeHtml(cat)}</div>` : ''}
         <div class="tag-prices">
           <div class="price-block unit">
             <div class="label">Unidade</div>
-            <div class="value">${unit || '—'}</div>
+            ${hasPromo ? `<div class="value promo-old">${unit || '—'}</div><div class="value promo-new">${promo}</div>` : `<div class="value">${unit || '—'}</div>`}
           </div>
           <div class="price-block">
             <div class="label">Caixa</div>
@@ -968,11 +1171,14 @@ function render(){
           </div>
         </div>
       </div>
-      ${isAdmin ? `
       <div class="tag-actions">
+        <a class="icon-btn wa-btn" href="${waLink}" target="_blank" rel="noopener" aria-label="Falar sobre este produto no WhatsApp">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm0 18.13h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.36c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.55-3.7 8.21-8.24 8.21z"/></svg>
+        </a>
+        ${isAdmin ? `
         <button class="icon-btn edit-btn" data-id="${p.id}" aria-label="Editar">✎</button>
-        <button class="icon-btn danger delete-btn" data-id="${p.id}" aria-label="Excluir">🗑</button>
-      </div>` : ''}
+        <button class="icon-btn danger delete-btn" data-id="${p.id}" aria-label="Excluir">🗑</button>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -1001,6 +1207,8 @@ function openSheet(product){
   inputName.value = product ? product.name : '';
   inputUnit.value = product ? (product.unitPrice ?? '') : '';
   inputBox.value = product ? (product.boxPrice ?? '') : '';
+  inputImage.value = product ? (product.imageUrl || '') : '';
+  inputPromo.value = product ? (product.promoPrice ?? '') : '';
   errName.style.display = 'none';
   errPrice.style.display = 'none';
 
@@ -1052,16 +1260,22 @@ async function saveProduct(){
 
   if(hasError) return;
 
+  const imageUrl = inputImage.value.trim();
+  const promoVal = inputPromo.value.trim();
+  const promoPrice = promoVal === '' ? null : Number(promoVal);
+
   if(editingId){
     const idx = products.findIndex(p => p.id === editingId);
     if(idx > -1){
-      products[idx] = { ...products[idx], name, unitPrice: unitNum, boxPrice: boxNum, categoryId };
+      products[idx] = { ...products[idx], name, unitPrice: unitNum, boxPrice: boxNum, categoryId, imageUrl, promoPrice };
     }
+    addHistoryEntry('Editou o produto', name);
   } else {
     products.push({
       id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
-      name, unitPrice: unitNum, boxPrice: boxNum, categoryId
+      name, unitPrice: unitNum, boxPrice: boxNum, categoryId, imageUrl, promoPrice
     });
+    addHistoryEntry('Cadastrou o produto', name);
   }
 
   closeSheet();
@@ -1078,6 +1292,7 @@ async function deleteProduct(id){
   if(!product) return;
   if(!confirm(`Excluir "${product.name}" do catálogo?`)) return;
   products = products.filter(p => p.id !== id);
+  addHistoryEntry('Excluiu o produto', product.name);
   renderTabs();
   render();
   await persist();
@@ -1118,6 +1333,7 @@ async function deleteCategory(id){
   if(!confirm(msg)) return;
   categories = categories.filter(c => c.id !== id);
   products.forEach(p => { if(p.categoryId === id) p.categoryId = null; });
+  addHistoryEntry('Excluiu a aba', cat.name);
   if(activeTab === id) activeTab = 'all';
   renderCatList();
   renderTabs();
@@ -1136,6 +1352,7 @@ async function addCategory(){
     return;
   }
   categories.push({ id: 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2,6), name });
+  addHistoryEntry('Criou a aba', name);
   newCatInput.value = '';
   renderCatList();
   renderTabs();
@@ -1151,6 +1368,127 @@ function openManageSheet(){
 }
 function closeManageSheet(){
   manageOverlay.classList.remove('open');
+}
+
+// ---- BULK IMPORT ----
+function openBulkImport(){
+  if(!isAdmin){ showToast('Apenas administradores podem importar produtos.'); return; }
+  document.getElementById('bulkImportText').value = '';
+  document.getElementById('bulkImportOverlay').classList.add('open');
+}
+function closeBulkImport(){
+  document.getElementById('bulkImportOverlay').classList.remove('open');
+}
+async function submitBulkImport(){
+  const raw = document.getElementById('bulkImportText').value;
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  if(lines.length === 0){ showToast('Cole ao menos uma linha para importar.'); return; }
+
+  let created = 0, skipped = 0, catsCreated = 0;
+  lines.forEach(line => {
+    const parts = line.split(';').map(p => p.trim());
+    const name = parts[0];
+    if(!name){ skipped++; return; }
+    const unitNum = parts[1] ? Number(parts[1].replace(',', '.')) : null;
+    const boxNum = parts[2] ? Number(parts[2].replace(',', '.')) : null;
+    const catName = parts[3] || '';
+
+    if((unitNum !== null && isNaN(unitNum)) || (boxNum !== null && isNaN(boxNum))){ skipped++; return; }
+    if(unitNum === null && boxNum === null){ skipped++; return; }
+
+    let categoryId = null;
+    if(catName){
+      let existing = categories.find(c => normalize(c.name) === normalize(catName));
+      if(!existing){
+        existing = { id: 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2,6), name: catName };
+        categories.push(existing);
+        catsCreated++;
+      }
+      categoryId = existing.id;
+    }
+
+    products.push({
+      id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
+      name, unitPrice: unitNum, boxPrice: boxNum, categoryId, imageUrl: '', promoPrice: null
+    });
+    created++;
+  });
+
+  closeBulkImport();
+  renderTabs();
+  render();
+  await persist();
+  await addHistoryEntry('Importou em massa', `${created} produto(s), ${catsCreated} aba(s) nova(s)`);
+  showToast(`${created} produto(s) importado(s)${skipped ? `, ${skipped} linha(s) ignorada(s)` : ''}`);
+}
+
+// ---- BULK PRICE ADJUST ----
+function openBulkAdjust(){
+  if(!isAdmin){ showToast('Apenas administradores podem reajustar preços.'); return; }
+  const sel = document.getElementById('bulkAdjustTab');
+  sel.innerHTML = `<option value="all">Todos os produtos</option>` +
+    categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  document.getElementById('bulkAdjustPercent').value = '';
+  document.getElementById('bulkAdjustOverlay').classList.add('open');
+}
+function closeBulkAdjust(){
+  document.getElementById('bulkAdjustOverlay').classList.remove('open');
+}
+async function submitBulkAdjust(){
+  const tabId = document.getElementById('bulkAdjustTab').value;
+  const pct = Number(document.getElementById('bulkAdjustPercent').value);
+  if(isNaN(pct) || pct === 0){ showToast('Informe um percentual válido, diferente de zero.'); return; }
+
+  const targets = tabId === 'all' ? products : products.filter(p => p.categoryId === tabId);
+  if(targets.length === 0){ showToast('Nenhum produto encontrado nessa aba.'); return; }
+
+  const tabLabel = tabId === 'all' ? 'Todos os produtos' : (categoryName(tabId) || 'aba selecionada');
+  if(!confirm(`Aplicar ${pct > 0 ? '+' : ''}${pct}% em ${targets.length} produto(s) de "${tabLabel}"?`)) return;
+
+  const factor = 1 + (pct / 100);
+  targets.forEach(p => {
+    if(p.unitPrice !== null && p.unitPrice !== undefined) p.unitPrice = Math.round(p.unitPrice * factor * 100) / 100;
+    if(p.boxPrice !== null && p.boxPrice !== undefined) p.boxPrice = Math.round(p.boxPrice * factor * 100) / 100;
+    if(p.promoPrice !== null && p.promoPrice !== undefined) p.promoPrice = Math.round(p.promoPrice * factor * 100) / 100;
+  });
+
+  closeBulkAdjust();
+  render();
+  await persist();
+  await addHistoryEntry('Reajustou preços', `${pct > 0 ? '+' : ''}${pct}% em ${tabLabel} (${targets.length} produtos)`);
+  showToast('Preços reajustados com sucesso');
+}
+
+// ---- HISTORY ----
+async function openHistory(){
+  if(!isAdmin){ showToast('Apenas administradores podem ver o histórico.'); return; }
+  const historyList = document.getElementById('historyList');
+  historyList.innerHTML = `<div style="font-size:13px; color:var(--ink-faint); padding:8px 4px;">Carregando...</div>`;
+  document.getElementById('historyOverlay').classList.add('open');
+  try{
+    const cfgSnap = await getDoc(configRef);
+    const history = cfgSnap.exists() ? (cfgSnap.data().history || []) : [];
+    if(history.length === 0){
+      historyList.innerHTML = `<div style="font-size:13px; color:var(--ink-faint); padding:8px 4px;">Nenhuma alteração registrada ainda.</div>`;
+      return;
+    }
+    historyList.innerHTML = history.map(h => {
+      const date = new Date(h.ts);
+      const dateStr = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+      return `
+      <div class="cat-row">
+        <div>
+          <div class="cat-row-name">${escapeHtml(h.action)}${h.detail ? ': ' + escapeHtml(String(h.detail)) : ''}</div>
+          <div class="cat-row-sub">${escapeHtml(h.admin || 'Admin')} · ${dateStr}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    historyList.innerHTML = `<div style="font-size:13px; color:var(--danger); padding:8px 4px;">Erro ao carregar histórico.</div>`;
+  }
+}
+function closeHistory(){
+  document.getElementById('historyOverlay').classList.remove('open');
 }
 
 // Events
@@ -1173,6 +1511,46 @@ adminOverlay.addEventListener('click', (e)=>{ if(e.target === adminOverlay) clos
 adminPassInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') submitAdminLogin(); });
 adminConfirmInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') submitAdminLogin(); });
 document.getElementById('savePassBtn').addEventListener('click', saveNewPassword);
+
+document.getElementById('openBulkImportBtn').addEventListener('click', openBulkImport);
+document.getElementById('cancelBulkImportBtn').addEventListener('click', closeBulkImport);
+document.getElementById('submitBulkImportBtn').addEventListener('click', submitBulkImport);
+document.getElementById('bulkImportOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'bulkImportOverlay') closeBulkImport(); });
+
+document.getElementById('openBulkAdjustBtn').addEventListener('click', openBulkAdjust);
+document.getElementById('cancelBulkAdjustBtn').addEventListener('click', closeBulkAdjust);
+document.getElementById('submitBulkAdjustBtn').addEventListener('click', submitBulkAdjust);
+document.getElementById('bulkAdjustOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'bulkAdjustOverlay') closeBulkAdjust(); });
+
+document.getElementById('openHistoryBtn').addEventListener('click', openHistory);
+document.getElementById('closeHistoryBtn').addEventListener('click', closeHistory);
+document.getElementById('historyOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'historyOverlay') closeHistory(); });
+
+// WhatsApp geral (contato direto)
+document.getElementById('whatsappFab').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Vim através do catálogo online da Role e gostaria de mais informações.')}`;
+
+// Indicador de conexão
+const offlineBanner = document.getElementById('offlineBanner');
+function updateOnlineStatus(){
+  offlineBanner.classList.toggle('show', !navigator.onLine);
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+// Expiração da sessão admin (7 dias)
+(function checkAdminSessionExpiry(){
+  if(isAdmin){
+    const loginTs = Number(localStorage.getItem('role_admin_login_ts') || 0);
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    if(!loginTs || (Date.now() - loginTs) > sevenDays){
+      isAdmin = false;
+      localStorage.removeItem('role_is_admin');
+      localStorage.removeItem('role_admin_login_ts');
+    }
+  }
+})();
+
 updateAdminUI();
 manageOverlay.addEventListener('click', (e)=>{ if(e.target === manageOverlay) closeManageSheet(); });
 document.getElementById('addCatBtn').addEventListener('click', addCategory);

@@ -28,7 +28,7 @@ Este app usa o **Firebase Firestore** como banco de dados compartilhado. Antes d
 ## Publicando com GitHub + Vercel
 
 1. Crie um repositório novo no GitHub (ex: `dist-role`)
-2. Suba este arquivo `index.html` (e este `README.md`) para o repositório
+2. Suba estes arquivos para o repositório: `index.html`, `manifest.json`, `icon-192.png`, `icon-512.png` e `README.md`
 3. Acesse https://vercel.com, faça login com sua conta GitHub
 4. Clique em **Add New → Project**, selecione o repositório `dist-role`
 5. Deixe as configurações padrão (é um site estático, sem build necessário) e clique em **Deploy**
@@ -36,7 +36,7 @@ Este app usa o **Firebase Firestore** como banco de dados compartilhado. Antes d
 
 ## Atualizando o app no futuro
 Sempre que quiser mudar algo (nova cor, novo campo, etc.):
-1. Suba o novo `index.html` no GitHub (substituindo o antigo, ou via commit)
+1. Suba os arquivos alterados no GitHub (substituindo os antigos, ou via commit) — normalmente só o `index.html` muda
 2. O Vercel detecta o novo commit e republica automaticamente — nenhum passo extra necessário
 
 ## Acesso administrador (novo)
@@ -47,6 +47,33 @@ Agora o app funciona em dois modos:
 Enquanto estiver no modo administrador (badge amarelo "ADMIN" visível), aparecem os botões de adicionar produto, editar, excluir e gerenciar abas. Para trocar a senha, abra **Gerenciar abas** e use o campo "Senha de administrador" no final. Para sair do modo admin, toque no badge "ADMIN" novamente.
 
 O login fica salvo no navegador do celular (não precisa digitar a senha toda vez no mesmo aparelho), mas pode ser desfeito a qualquer momento tocando em "Sair".
+
+## Novidades desta versão
+
+**Para os clientes (modo público)**
+- Foto do produto (cole um link de imagem ao cadastrar)
+- Selo "OFERTA" com preço promocional (de/por) quando configurado
+- Botão do WhatsApp em cada produto — o cliente já manda uma mensagem pronta perguntando sobre aquele item
+- Botão flutuante "Falar com a Role" no WhatsApp, sempre visível
+- Link para o Instagram (@role_distribuidora) no cabeçalho
+- App instalável na tela inicial do celular (ícone próprio, abre em tela cheia)
+- Aviso de "sem internet" quando a conexão cair
+
+**Para os administradores**
+- Importação de produtos em massa (colar uma lista e cadastrar tudo de uma vez)
+- Reajuste de preços em lote por aba (ex: +5% em toda a aba Cervejas)
+- Histórico de alterações (quem cadastrou, editou, excluiu ou reajustou o quê e quando)
+- Sessão de administrador expira automaticamente após 7 dias por segurança
+
+### Formato para importação em massa
+Uma linha por produto, campos separados por `;`:
+```
+Nome;PreçoUnitário;PreçoCaixa;Aba
+Skol lata 350ml;5.00;58.00;Cervejas
+Gin Rocks;35.00;;Gin
+```
+- Preço da caixa é opcional (pode deixar vazio)
+- Se a aba não existir ainda, ela é criada automaticamente
 
 ## Segurança do Firestore
 
