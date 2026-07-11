@@ -39,7 +39,17 @@ Sempre que quiser mudar algo (nova cor, novo campo, etc.):
 1. Suba o novo `index.html` no GitHub (substituindo o antigo, ou via commit)
 2. O Vercel detecta o novo commit e republica automaticamente — nenhum passo extra necessário
 
+## Acesso administrador (novo)
+Agora o app funciona em dois modos:
+- **Modo público (padrão):** qualquer pessoa que abrir o link só consulta e busca produtos — sem botão de adicionar, editar ou excluir. Ideal para compartilhar com clientes.
+- **Modo administrador:** toque no ícone de cadeado 🔒 no canto do cabeçalho. Na primeira vez, o app pede para **criar uma senha de administrador** (mínimo 4 caracteres) — essa senha fica salva de forma protegida (hash) no Firebase. Da segunda vez em diante, é só digitar a senha para entrar.
+
+Enquanto estiver no modo administrador (badge amarelo "ADMIN" visível), aparecem os botões de adicionar produto, editar, excluir e gerenciar abas. Para trocar a senha, abra **Gerenciar abas** e use o campo "Senha de administrador" no final. Para sair do modo admin, toque no badge "ADMIN" novamente.
+
+O login fica salvo no navegador do celular (não precisa digitar a senha toda vez no mesmo aparelho), mas pode ser desfeito a qualquer momento tocando em "Sair".
+
 ## Segurança do Firestore
+
 O modo de teste do Firestore libera leitura/escrita por 30 dias. Depois disso, ajuste as regras
 em **Firestore Database → Regras** para algo como:
 ```
