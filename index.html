@@ -916,9 +916,11 @@ function startCatalogSync(){
 async function persistCategories(){
   try{
     await setDoc(configRef, { categories }, { merge: true });
+    return true;
   }catch(e){
     console.error(e);
-    showToast('Não foi possível salvar as abas. Verifique a internet.');
+    alert('Não foi possível salvar a aba no banco de dados.\n\nMotivo provável: as regras de segurança do Firestore ainda não liberam a coleção "role-catalog". Peça pro administrador conferir isso no console do Firebase.\n\nDetalhe técnico: ' + e.message);
+    return false;
   }
 }
 
@@ -926,18 +928,22 @@ async function saveProductDoc(product){
   try{
     const { id, ...data } = product;
     await setDoc(doc(productsColRef, id), data);
+    return true;
   }catch(e){
     console.error(e);
-    showToast('Não foi possível salvar o produto. Verifique a internet.');
+    alert('O produto NÃO foi salvo no banco de dados — ele vai sumir se a página for recarregada.\n\nMotivo provável: as regras de segurança do Firestore ainda não liberam a coleção "role-catalog-items". Peça pro administrador conferir isso no console do Firebase.\n\nDetalhe técnico: ' + e.message);
+    return false;
   }
 }
 
 async function deleteProductDoc(id){
   try{
     await deleteDoc(doc(productsColRef, id));
+    return true;
   }catch(e){
     console.error(e);
-    showToast('Não foi possível excluir. Verifique a internet.');
+    alert('Não foi possível excluir o produto no banco de dados.\n\nDetalhe técnico: ' + e.message);
+    return false;
   }
 }
 
@@ -1327,26 +1333,42 @@ async function saveProduct(){
   const promoPrice = promoVal === '' ? null : Number(promoVal);
   let productToSave;
 
+  const wasEditing = !!editingId;
+  const previousProduct = wasEditing ? products.find(p => p.id === editingId) : null;
+  const previousSnapshot = previousProduct ? { ...previousProduct } : null;
+
   if(editingId){
     const idx = products.findIndex(p => p.id === editingId);
     productToSave = { ...(idx > -1 ? products[idx] : {}), id: editingId, name, unitPrice: unitNum, boxPrice: boxNum, categoryId, imageUrl, promoPrice };
     if(idx > -1) products[idx] = productToSave;
-    addHistoryEntry('Editou o produto', name);
   } else {
     productToSave = {
       id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
       name, unitPrice: unitNum, boxPrice: boxNum, categoryId, imageUrl, promoPrice
     };
     products.push(productToSave);
-    addHistoryEntry('Cadastrou o produto', name);
   }
 
   closeSheet();
   if(categoryId) activeTab = categoryId;
   renderTabs();
   render();
-  await saveProductDoc(productToSave);
-  showToast(editingId ? 'Produto atualizado' : 'Produto cadastrado na aba correta');
+
+  const ok = await saveProductDoc(productToSave);
+  if(ok){
+    addHistoryEntry(wasEditing ? 'Editou o produto' : 'Cadastrou o produto', name);
+    showToast(wasEditing ? 'Produto atualizado' : 'Produto cadastrado na aba correta');
+  } else {
+    // reverte a mudança local, já que não foi realmente salva no banco
+    if(wasEditing && previousSnapshot){
+      const idx = products.findIndex(p => p.id === editingId);
+      if(idx > -1) products[idx] = previousSnapshot;
+    } else {
+      products = products.filter(p => p.id !== productToSave.id);
+    }
+    renderTabs();
+    render();
+  }
 }
 
 async function deleteProduct(id){
@@ -1355,11 +1377,17 @@ async function deleteProduct(id){
   if(!product) return;
   if(!confirm(`Excluir "${product.name}" do catálogo?`)) return;
   products = products.filter(p => p.id !== id);
-  addHistoryEntry('Excluiu o produto', product.name);
   renderTabs();
   render();
-  await deleteProductDoc(id);
-  showToast('Produto excluído');
+  const ok = await deleteProductDoc(id);
+  if(ok){
+    addHistoryEntry('Excluiu o produto', product.name);
+    showToast('Produto excluído');
+  } else {
+    products.push(product);
+    renderTabs();
+    render();
+  }
 }
 
 // ---- CATEGORY MANAGEMENT ----
