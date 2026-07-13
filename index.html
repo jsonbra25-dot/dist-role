@@ -6,6 +6,7 @@
 <title>DIST. ROLE</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="DIST. ROLE">
@@ -894,7 +895,8 @@ function formatBRL(value){
 }
 
 function startCatalogSync(){
-  document.getElementById('loadingMsg').textContent = 'Conectando ao catálogo...';
+  const loadingEl = document.getElementById('loadingMsg');
+  if(loadingEl) loadingEl.textContent = 'Conectando ao catálogo...';
   onSnapshot(productsColRef, (snap)=>{
     products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderTabs();
