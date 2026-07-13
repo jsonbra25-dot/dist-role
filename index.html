@@ -669,8 +669,13 @@
         <div class="error-msg" id="errPrice">Informe ao menos um preço válido.</div>
 
         <div class="field">
-          <label>Foto do produto (link/URL, opcional)</label>
-          <input id="inputImage" type="text" placeholder="https://...">
+          <label>Foto do produto (opcional)</label>
+          <input id="inputImageFile" type="file" accept="image/*">
+          <div id="imagePreviewWrap" style="display:none; align-items:center; gap:10px; margin-top:10px;">
+            <img id="imagePreview" style="width:64px; height:64px; object-fit:cover; border-radius:10px; border:1px solid var(--line);">
+            <button type="button" class="btn ghost" id="removeImageBtn" style="width:auto; flex:none; padding:8px 14px; font-size:12px;">Remover foto</button>
+          </div>
+          <div id="imageUploadStatus" style="font-size:12px; color:var(--ink-faint); margin-top:6px; display:none;">Processando imagem...</div>
         </div>
 
         <div class="field">
@@ -800,7 +805,7 @@ Gin Rocks;35.00;;Gin"></textarea>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, collection, onSnapshot, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ⚠️ COLE AQUI a configuração do SEU projeto Firebase (veja instruções enviadas junto com o app)
 const firebaseConfig = {
@@ -818,7 +823,7 @@ const INSTAGRAM_HANDLE = "role_distribuidora";
 
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
-const catalogRef = doc(db, "role-catalog", "main");
+const productsColRef = collection(db, "role-catalog-items");
 const configRef = doc(db, "role-catalog", "config");
 let suppressNextWrite = false;
 let isAdmin = localStorage.getItem('role_is_admin') === 'true';
@@ -838,7 +843,12 @@ const inputName = document.getElementById('inputName');
 const inputUnit = document.getElementById('inputUnit');
 const inputBox = document.getElementById('inputBox');
 const inputCategory = document.getElementById('inputCategory');
-const inputImage = document.getElementById('inputImage');
+const inputImageFile = document.getElementById('inputImageFile');
+const imagePreviewWrap = document.getElementById('imagePreviewWrap');
+const imagePreview = document.getElementById('imagePreview');
+const removeImageBtn = document.getElementById('removeImageBtn');
+const imageUploadStatus = document.getElementById('imageUploadStatus');
+let currentImageData = '';
 const inputPromo = document.getElementById('inputPromo');
 const errName = document.getElementById('errName');
 const errPrice = document.getElementById('errPrice');
@@ -885,30 +895,71 @@ function formatBRL(value){
 
 function startCatalogSync(){
   document.getElementById('loadingMsg').textContent = 'Conectando ao catálogo...';
-  onSnapshot(catalogRef, (snap)=>{
-    if(snap.exists()){
-      const data = snap.data();
-      products = data.products || [];
-      categories = data.categories || [];
-    } else {
-      products = [];
-      categories = [];
-    }
+  onSnapshot(productsColRef, (snap)=>{
+    products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderTabs();
     render();
   }, (err)=>{
     console.error(err);
     showToast('Erro de conexão com o catálogo. Verifique a internet.');
   });
+
+  onSnapshot(configRef, (snap)=>{
+    categories = snap.exists() ? (snap.data().categories || []) : [];
+    renderTabs();
+    render();
+  }, (err)=>{
+    console.error(err);
+  });
 }
 
-async function persist(){
+async function persistCategories(){
   try{
-    await setDoc(catalogRef, { products, categories });
+    await setDoc(configRef, { categories }, { merge: true });
   }catch(e){
     console.error(e);
-    showToast('Não foi possível salvar. Verifique a internet.');
+    showToast('Não foi possível salvar as abas. Verifique a internet.');
   }
+}
+
+async function saveProductDoc(product){
+  try{
+    const { id, ...data } = product;
+    await setDoc(doc(productsColRef, id), data);
+  }catch(e){
+    console.error(e);
+    showToast('Não foi possível salvar o produto. Verifique a internet.');
+  }
+}
+
+async function deleteProductDoc(id){
+  try{
+    await deleteDoc(doc(productsColRef, id));
+  }catch(e){
+    console.error(e);
+    showToast('Não foi possível excluir. Verifique a internet.');
+  }
+}
+
+function compressImage(file, maxWidth = 700, quality = 0.72){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        if(w > maxWidth){ h = Math.round(h * (maxWidth / w)); w = maxWidth; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => reject(new Error('Falha ao carregar imagem'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
+    reader.readAsDataURL(file);
+  });
 }
 
 async function hashPassword(pw){
@@ -1207,7 +1258,9 @@ function openSheet(product){
   inputName.value = product ? product.name : '';
   inputUnit.value = product ? (product.unitPrice ?? '') : '';
   inputBox.value = product ? (product.boxPrice ?? '') : '';
-  inputImage.value = product ? (product.imageUrl || '') : '';
+  inputImageFile.value = '';
+  currentImageData = product ? (product.imageUrl || '') : '';
+  updateImagePreview();
   inputPromo.value = product ? (product.promoPrice ?? '') : '';
   errName.style.display = 'none';
   errPrice.style.display = 'none';
@@ -1225,6 +1278,15 @@ function openSheet(product){
 
   overlay.classList.add('open');
   setTimeout(()=> inputName.focus(), 50);
+}
+
+function updateImagePreview(){
+  if(currentImageData){
+    imagePreview.src = currentImageData;
+    imagePreviewWrap.style.display = 'flex';
+  } else {
+    imagePreviewWrap.style.display = 'none';
+  }
 }
 
 function closeSheet(){
@@ -1260,21 +1322,22 @@ async function saveProduct(){
 
   if(hasError) return;
 
-  const imageUrl = inputImage.value.trim();
+  const imageUrl = currentImageData || '';
   const promoVal = inputPromo.value.trim();
   const promoPrice = promoVal === '' ? null : Number(promoVal);
+  let productToSave;
 
   if(editingId){
     const idx = products.findIndex(p => p.id === editingId);
-    if(idx > -1){
-      products[idx] = { ...products[idx], name, unitPrice: unitNum, boxPrice: boxNum, categoryId, imageUrl, promoPrice };
-    }
+    productToSave = { ...(idx > -1 ? products[idx] : {}), id: editingId, name, unitPrice: unitNum, boxPrice: boxNum, categoryId, imageUrl, promoPrice };
+    if(idx > -1) products[idx] = productToSave;
     addHistoryEntry('Editou o produto', name);
   } else {
-    products.push({
+    productToSave = {
       id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
       name, unitPrice: unitNum, boxPrice: boxNum, categoryId, imageUrl, promoPrice
-    });
+    };
+    products.push(productToSave);
     addHistoryEntry('Cadastrou o produto', name);
   }
 
@@ -1282,7 +1345,7 @@ async function saveProduct(){
   if(categoryId) activeTab = categoryId;
   renderTabs();
   render();
-  await persist();
+  await saveProductDoc(productToSave);
   showToast(editingId ? 'Produto atualizado' : 'Produto cadastrado na aba correta');
 }
 
@@ -1295,7 +1358,7 @@ async function deleteProduct(id){
   addHistoryEntry('Excluiu o produto', product.name);
   renderTabs();
   render();
-  await persist();
+  await deleteProductDoc(id);
   showToast('Produto excluído');
 }
 
@@ -1332,13 +1395,15 @@ async function deleteCategory(id){
     : `Excluir a aba "${cat.name}"?`;
   if(!confirm(msg)) return;
   categories = categories.filter(c => c.id !== id);
+  const affectedProducts = products.filter(p => p.categoryId === id);
   products.forEach(p => { if(p.categoryId === id) p.categoryId = null; });
   addHistoryEntry('Excluiu a aba', cat.name);
   if(activeTab === id) activeTab = 'all';
   renderCatList();
   renderTabs();
   render();
-  await persist();
+  await persistCategories();
+  await Promise.all(affectedProducts.map(p => saveProductDoc(p)));
   showToast('Aba excluída');
 }
 
@@ -1356,7 +1421,7 @@ async function addCategory(){
   newCatInput.value = '';
   renderCatList();
   renderTabs();
-  await persist();
+  await persistCategories();
   showToast('Aba criada');
 }
 
@@ -1385,6 +1450,7 @@ async function submitBulkImport(){
   if(lines.length === 0){ showToast('Cole ao menos uma linha para importar.'); return; }
 
   let created = 0, skipped = 0, catsCreated = 0;
+  const newProducts = [];
   lines.forEach(line => {
     const parts = line.split(';').map(p => p.trim());
     const name = parts[0];
@@ -1407,17 +1473,20 @@ async function submitBulkImport(){
       categoryId = existing.id;
     }
 
-    products.push({
+    const newProduct = {
       id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
       name, unitPrice: unitNum, boxPrice: boxNum, categoryId, imageUrl: '', promoPrice: null
-    });
+    };
+    products.push(newProduct);
+    newProducts.push(newProduct);
     created++;
   });
 
   closeBulkImport();
   renderTabs();
   render();
-  await persist();
+  if(catsCreated > 0) await persistCategories();
+  await Promise.all(newProducts.map(p => saveProductDoc(p)));
   await addHistoryEntry('Importou em massa', `${created} produto(s), ${catsCreated} aba(s) nova(s)`);
   showToast(`${created} produto(s) importado(s)${skipped ? `, ${skipped} linha(s) ignorada(s)` : ''}`);
 }
@@ -1454,7 +1523,7 @@ async function submitBulkAdjust(){
 
   closeBulkAdjust();
   render();
-  await persist();
+  await Promise.all(targets.map(p => saveProductDoc(p)));
   await addHistoryEntry('Reajustou preços', `${pct > 0 ? '+' : ''}${pct}% em ${tabLabel} (${targets.length} produtos)`);
   showToast('Preços reajustados com sucesso');
 }
@@ -1511,6 +1580,33 @@ adminOverlay.addEventListener('click', (e)=>{ if(e.target === adminOverlay) clos
 adminPassInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') submitAdminLogin(); });
 adminConfirmInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') submitAdminLogin(); });
 document.getElementById('savePassBtn').addEventListener('click', saveNewPassword);
+
+inputImageFile.addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){
+    showToast('Selecione um arquivo de imagem válido.');
+    inputImageFile.value = '';
+    return;
+  }
+  imageUploadStatus.style.display = 'block';
+  imagePreviewWrap.style.display = 'none';
+  try{
+    currentImageData = await compressImage(file);
+    updateImagePreview();
+  }catch(err){
+    console.error(err);
+    showToast('Não foi possível processar essa imagem.');
+  } finally {
+    imageUploadStatus.style.display = 'none';
+  }
+});
+
+removeImageBtn.addEventListener('click', ()=>{
+  currentImageData = '';
+  inputImageFile.value = '';
+  updateImagePreview();
+});
 
 document.getElementById('openBulkImportBtn').addEventListener('click', openBulkImport);
 document.getElementById('cancelBulkImportBtn').addEventListener('click', closeBulkImport);

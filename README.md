@@ -48,10 +48,19 @@ Enquanto estiver no modo administrador (badge amarelo "ADMIN" visível), aparece
 
 O login fica salvo no navegador do celular (não precisa digitar a senha toda vez no mesmo aparelho), mas pode ser desfeito a qualquer momento tocando em "Sair".
 
+## Fotos dos produtos: upload direto (sem Firebase Storage)
+Antes, a foto era um link colado manualmente. Agora dá pra **enviar a foto direto do celular** (galeria ou câmera).
+
+Isso foi feito **sem usar o Firebase Storage de propósito**: desde fevereiro de 2026, o Firebase passou a exigir que o projeto esteja no plano pago (Blaze, com cartão de crédito cadastrado) para usar o Storage — mesmo que o uso real fique dentro da cota gratuita. Pra evitar que vocês precisem cadastrar cartão só pra isso, a foto é comprimida no próprio celular (reduzida de tamanho e qualidade) e salva diretamente no Firestore, que continua 100% gratuito no plano Spark.
+
+Por causa disso, cada produto agora é salvo como um **documento individual** no Firestore (antes, o catálogo inteiro ficava em um único documento). Isso é mais robusto e evita o limite de 1MB por documento quando várias fotos se acumulam.
+
+**Atenção:** se vocês já tinham cadastrado produtos de teste antes desta atualização, eles ficaram no formato antigo e não vão aparecer automaticamente após subir esta versão. Se isso acontecer, é só recadastrar — ou usar a importação em massa (mais rápido para vários produtos de uma vez).
+
 ## Novidades desta versão
 
 **Para os clientes (modo público)**
-- Foto do produto (cole um link de imagem ao cadastrar)
+- Foto do produto (upload direto do celular, sem precisar de link)
 - Selo "OFERTA" com preço promocional (de/por) quando configurado
 - Botão do WhatsApp em cada produto — o cliente já manda uma mensagem pronta perguntando sobre aquele item
 - Botão flutuante "Falar com a Role" no WhatsApp, sempre visível
@@ -84,6 +93,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /role-catalog/{doc} {
+      allow read, write: if true;
+    }
+    match /role-catalog-items/{doc} {
       allow read, write: if true;
     }
   }
